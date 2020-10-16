@@ -95,7 +95,7 @@ if __name__ == '__main__':
 
     ### file directory
     # file_path = sys.argv[1]
-    file_path = "benchmarks/3_2_10/3_2_10-1"
+    file_path = "benchmarks/4_2_10/4_2_10-10"
     # target model file
     model_file = file_path + "/model.json"
     # prior information required for learning
@@ -103,7 +103,7 @@ if __name__ == '__main__':
 
     ### teacher type - smart_teacher / normal_teacher
     # teacher_type = sys.argv[2]
-    teacher_type = "normal_teacher"
+    teacher_type = "smart_teacher"
 
     # results file directory
     result_path = 'results/' + teacher_type + '/' + file_path

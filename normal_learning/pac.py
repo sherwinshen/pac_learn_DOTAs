@@ -52,6 +52,8 @@ def pac_equivalence_query_level(hypothesis, upper_guard, epsilon, delta, level, 
     return True, ctx
 
 
+# --------------------------------- auxiliary function ---------------------------------
+
 def is_counterexample_normal(hypothesis, system, sample):
     real_value = system.test_DTWs_normal(sample, False)
     value = hypothesis.test_DTWs_normal(sample)

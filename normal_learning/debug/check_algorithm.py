@@ -43,6 +43,8 @@ def check_guess(current_table, need_to_explore, system):
     raise Exception('No Right')
 
 
+# --------------------------------- auxiliary function ---------------------------------
+
 def is_LRTWs_right(LRTWs, system):
     if not LRTWs:
         return True
