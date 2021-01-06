@@ -98,9 +98,9 @@ def learnOTA_normal(system, actions, upper_guard, epsilon, delta, state_num, deb
         equivalent, ctx = True, None
         if prev_ctx is not None:
             for ctx in prev_ctx:
-                real_value = system.test_DTWs_normal(ctx)
-                value = hypothesisOTA.test_DTWs_normal(ctx)
-                if real_value != value:
+                real_outputs = system.test_DTWs_normal(ctx)
+                outputs = hypothesisOTA.test_DTWs_normal(ctx)
+                if real_outputs != outputs:
                     equivalent = False
                     ctx = minimize_counterexample_normal(hypothesisOTA, system, ctx)
                     break
@@ -137,4 +137,4 @@ def learnOTA_normal(system, actions, upper_guard, epsilon, delta, state_num, deb
             break
     if target is not None:
         target = target.build_simple_hypothesis()
-    return target, system.mq_num, system.eq_num, system.test_num, t_number
+    return target, system.mq_num, system.eq_num, system.test_num, system.test_num_cache, system.action_num, t_number

@@ -84,4 +84,4 @@ def learnOTA_smart(system, actions, upper_guard, epsilon, delta, state_num, comp
                 print("***************** New-Table" + str(table_num) + " is as follow *******************")
                 table.show()
 
-    return learned_system.build_simple_hypothesis(), system.mq_num, system.eq_num, system.test_num, table_num
+    return learned_system.build_simple_hypothesis(), system.mq_num, system.eq_num, system.test_num, system.test_num_cache, system.action_num, table_num

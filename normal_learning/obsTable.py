@@ -124,14 +124,14 @@ def init_table_normal(actions, system):
         temp_tables = []
         for table in tables:
             new_DTWs = [TimedWord(actions[i], 0)]  # 同样也是LTWs
-            value = system.test_DTWs_normal(new_DTWs, True)
-            if value == -1:  # now at sink
+            outputs = system.test_DTWs_normal(new_DTWs, True)
+            if outputs[-1] == -1:  # now at sink
                 guesses = [True]
             else:
                 guesses = [True, False]
             for guess in guesses:
                 new_LRTWs = [ResetTimedWord(new_DTWs[0].action, new_DTWs[0].time, guess)]
-                new_element = Element(new_LRTWs, [value], [[]])
+                new_element = Element(new_LRTWs, [outputs[-1]], [[]])
                 temp_R = table.R + [new_element]
                 new_table = ObsTable(deepcopy(S), deepcopy(temp_R), deepcopy(E), parent=-1, reason="init")
                 temp_tables.append(new_table)
@@ -156,9 +156,9 @@ def make_closed(closed_move, actions, table, system):
             new_LRTWs = element.LRTWs + [ResetTimedWord(actions[i], 0, True)]
             if is_LRTWs_valid(new_LRTWs):
                 DTWs = LRTW_to_DTW(new_LRTWs)
-                value = system.test_DTWs_normal(DTWs, True)
+                outputs = system.test_DTWs_normal(DTWs, True)
                 system.mq_num -= 1
-                if value == -1:
+                if outputs[-1] == -1:
                     system.mq_num += 1
                     new_Element = fill_sink_row(new_LRTWs, table.E)
                     action_element_list.append(new_Element)
@@ -220,18 +220,18 @@ def make_consistent(prefix_LTWs, e_index, reset_i, reset_j, index_i, index_j, ta
             if temp_table.S[i].values[0] != -1:
                 if is_LRTWs_valid(new_LRTWs):
                     DTWs = LRTW_to_DTW(new_LRTWs)
-                    value = system.test_DTWs_normal(DTWs, True)
-                    if value == -1:
+                    outputs = system.test_DTWs_normal(DTWs, True)
+                    if outputs[-1] == -1:
                         if not check_guessed_to_sink(LRTW_to_DRTW(new_LRTWs), system):
                             flag = False
                             break
-                    temp_table.S[i].values.append(value)
+                    temp_table.S[i].values.append(outputs[-1])
                     temp_table.S[i].suffixes_resets.append(reset_temp[i])
                 else:
                     valid_LRTWs = get_valid_LRTWs(new_LRTWs)
                     DTWs = LRTW_to_DTW(valid_LRTWs)
-                    value = system.test_DTWs_normal(DTWs, True)
-                    if value == -1:
+                    outputs = system.test_DTWs_normal(DTWs, True)
+                    if outputs[-1] == -1:
                         flag = False
                         break
                     temp_table.S[i].values.append(-1)
@@ -246,18 +246,18 @@ def make_consistent(prefix_LTWs, e_index, reset_i, reset_j, index_i, index_j, ta
                 if temp_table.R[j].values[0] != -1:
                     if is_LRTWs_valid(new_LRTWs):
                         DTWs = LRTW_to_DTW(new_LRTWs)
-                        value = system.test_DTWs_normal(DTWs, True)
-                        if value == -1:
+                        outputs = system.test_DTWs_normal(DTWs, True)
+                        if outputs[-1] == -1:
                             if not check_guessed_to_sink(LRTW_to_DRTW(new_LRTWs), system):
                                 flag = False
                                 break
-                        temp_table.R[j].values.append(value)
+                        temp_table.R[j].values.append(outputs[-1])
                         temp_table.R[j].suffixes_resets.append(reset_temp[s_length + j])
                     else:
                         valid_LRTWs = get_valid_LRTWs(new_LRTWs)
                         DTWs = LRTW_to_DTW(valid_LRTWs)
-                        value = system.test_DTWs_normal(DTWs, True)
-                        if value == -1:
+                        outputs = system.test_DTWs_normal(DTWs, True)
+                        if outputs[-1] == -1:
                             flag = False
                             break
                         temp_table.R[j].values.append(-1)
@@ -277,8 +277,8 @@ def deal_ctx(table, ctx, system):
 
     temp_list = []
     for i in range(len(ctx)):
-        value = system.test_DTWs_normal(ctx[:i + 1])
-        if value == -1:
+        outputs = system.test_DTWs_normal(ctx[:i + 1])
+        if outputs[-1] == -1:
             temp_list.append([True])
         else:
             temp_list.append([True, False])
@@ -294,7 +294,7 @@ def deal_ctx(table, ctx, system):
                 temp_LRTWs = LRTWs[:j + 1]
                 if temp_LRTWs in S_R_LRTWs:
                     continue
-                if system.test_DTWs_normal(LRTW_to_DTW(temp_LRTWs), True) == -1:
+                if system.test_DTWs_normal(LRTW_to_DTW(temp_LRTWs), True)[-1] == -1:
                     system.mq_num -= 1
                     new_Element = fill_sink_row(temp_LRTWs, table.E)
                     cur_LRTWs_elements.append(new_Element)
@@ -401,19 +401,19 @@ def fill(LRTWs, E, reset, system):
         new_LRTWs = LRTWs + combine_LRTWs_with_LTWs(E[i], reset[i])
         if is_LRTWs_valid(new_LRTWs):
             DTWs = LRTW_to_DTW(new_LRTWs)
-            value = system.test_DTWs_normal(DTWs, True)
-            if value == -1:
+            outputs = system.test_DTWs_normal(DTWs, True)
+            if outputs[-1] == -1:
                 if not check_guessed_to_sink(LRTW_to_DRTW(new_LRTWs), system):
                     return False, None
-            values.append(value)
+            values.append(outputs[-1])
         else:
             if not is_combined_LRTWs_valid(new_LRTWs):
                 return False, None
             else:
                 valid_LRTWs = get_valid_LRTWs(new_LRTWs)
                 DTWs = LRTW_to_DTW(valid_LRTWs)
-                value = system.test_DTWs_normal(DTWs, True)
-                if value == -1:
+                outputs = system.test_DTWs_normal(DTWs, True)
+                if outputs[-1] == -1:
                     return False, None
                 values.append(-1)
     return True, Element(LRTWs, values, reset)

@@ -31,7 +31,7 @@ class LetterWord(object):
         return self.lw == letterword.lw
 
 
-# 注意，传入的model1和model2都要是complete模型
+# 注意，传入的model1和model2都要是complete模型，返回ctx为DTWs
 def equivalence(model1, model2, upper_guard):
     upper_guard = max(upper_guard, model1.max_time_value(), model2.max_time_value())
     res, w_pos = ota_inclusion(upper_guard, model1, model2)

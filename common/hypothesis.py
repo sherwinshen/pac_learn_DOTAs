@@ -37,12 +37,14 @@ class OTA(object):
 
     # Perform tests(DTWs) on the hypothesis(smart teacher), return value and DRTWs(full)
     def test_DTWs(self, DTWs):
+        outputs = []
         DRTWs = []
         now_time = 0
         cur_state = self.init_state
         for dtw in DTWs:
             if cur_state == self.sink_state:
                 DRTWs.append(ResetTimedWord(dtw.action, dtw.time, True))
+                outputs.append(-1)
             else:
                 time = dtw.time + now_time
                 new_LTW = TimedWord(dtw.action, time)
@@ -57,36 +59,40 @@ class OTA(object):
                             reset = False
                         DRTWs.append(ResetTimedWord(dtw.action, dtw.time, reset))
                         break
-        if cur_state in self.accept_states:
-            value = 1
-        elif cur_state == self.sink_state:
-            value = -1
-        else:
-            value = 0
-        return DRTWs, value
+                if cur_state in self.accept_states:
+                    outputs.append(1)
+                elif cur_state == self.sink_state:
+                    outputs.append(-1)
+                else:
+                    outputs.append(0)
+        return DRTWs, outputs
 
     # Perform tests(DTWs) on the hypothesis(normal teacher), return value
     def test_DTWs_normal(self, DTWs):
+        outputs = []
         now_time = 0
         cur_state = self.init_state
         for dtw in DTWs:
-            time = dtw.time + now_time
-            new_LTW = TimedWord(dtw.action, time)
-            for tran in self.trans:
-                if tran.source == cur_state and tran.is_passing_tran(new_LTW):
-                    cur_state = tran.target
-                    if tran.reset:
-                        now_time = 0
-                    else:
-                        now_time = time
-                    if cur_state == self.sink_state:
-                        return -1
-                    break
-        if cur_state in self.accept_states:
-            value = 1
-        else:
-            value = 0
-        return value
+            if cur_state == self.sink_state:
+                outputs.append(-1)
+            else:
+                time = dtw.time + now_time
+                new_LTW = TimedWord(dtw.action, time)
+                for tran in self.trans:
+                    if tran.source == cur_state and tran.is_passing_tran(new_LTW):
+                        cur_state = tran.target
+                        if tran.reset:
+                            now_time = 0
+                        else:
+                            now_time = time
+                        break
+                if cur_state in self.accept_states:
+                    outputs.append(1)
+                elif cur_state == self.sink_state:
+                    outputs.append(-1)
+                else:
+                    outputs.append(0)
+        return outputs
 
     # build simple hypothesis - merge guards
     def build_simple_hypothesis(self):

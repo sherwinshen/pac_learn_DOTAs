@@ -9,6 +9,9 @@ class TimedWord(object):
         else:
             return False
 
+    def __hash__(self):
+        return hash(("TW", self.action, self.time))
+
     def __lt__(self, other):
         return (self.time, self.action) < (other.time, other.action)
 

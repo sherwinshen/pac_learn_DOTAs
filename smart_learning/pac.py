@@ -17,10 +17,8 @@ def pac_equivalence_query(hypothesis, upper_guard, epsilon, delta, state_num, eq
             sample = sample_generation_main(upper_guard, length, system)
 
             # Compare the results
-            flag = is_counterexample(hypothesis, system, sample)
+            flag, ctx = is_counterexample(hypothesis, system, sample)
             if flag:
-                # if ctx is None or sample < ctx:
-                ctx = sample
                 break
         if ctx is not None:
             ctx = minimize_counterexample(hypothesis, system, ctx)
@@ -32,16 +30,25 @@ def pac_equivalence_query(hypothesis, upper_guard, epsilon, delta, state_num, eq
 
 #  Compare evaluation of teacher and hypothesis on the given sample (a delay-timed word).
 def is_counterexample(hypothesis, system, sample):
-    system_res, real_value = system.test_DTWs(sample)
-    hypothesis_res, value = hypothesis.test_DTWs(sample)
+    system_res, real_outputs = system.test_DTWs(sample)
+    hypothesis_res, outputs = hypothesis.test_DTWs(sample)
     # return (real_value == 1 and value != 1) or (real_value != 1 and value == 1)
-    return real_value != value
+    if real_outputs != outputs:
+        # 最小化反例长度
+        ctx = []
+        for i in range(len(sample)):
+            ctx.append(sample[i])
+            if real_outputs[i] != outputs[i]:
+                break
+        return True, ctx
+    else:
+        return False, None
 
 
 def minimize_counterexample(hypothesis, system, ctx):
     # Find sequence of reset information
     reset = []
-    DRTWs, value = system.test_DTWs(ctx)
+    DRTWs, outputs = system.test_DTWs(ctx)
     for drtw in DRTWs:
         reset.append(drtw.reset)
     # ctx to LTWs
@@ -57,7 +64,8 @@ def minimize_counterexample(hypothesis, system, ctx):
                 break
             LTWs_temp = copy.deepcopy(LTWs)
             LTWs_temp[i] = TimedWord(LTWs[i].action, one_lower(LTWs[i].time))
-            if not is_counterexample(hypothesis, system, LTW_to_DTW(LTWs_temp, reset)):
+            flag, ctx = is_counterexample(hypothesis, system, LTW_to_DTW(LTWs_temp, reset))
+            if not flag:
                 break
             LTWs = copy.deepcopy(LTWs_temp)
     return LTW_to_DTW(LTWs, reset)

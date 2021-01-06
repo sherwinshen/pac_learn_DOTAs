@@ -140,8 +140,8 @@ def make_consistent(table, consistent_add, system):
 
 
 def deal_ctx(table, ctx, system):
-    DRTWs, value = system.test_DTWs(ctx)
-    system.test_num -= 1
+    DRTWs, outputs = system.test_DTWs(ctx)
+    system.test_num -= 1  # ctx 返回的是DRTW，这边为了防止返回的不是DRTW而多添加一步，不计入测试数中
     new_ctx = normalize(DRTW_to_LRTW(DRTWs))
     pref = prefixes(new_ctx)
     LRTWs_list = [s.LRTWs for s in table.S] + [r.LRTWs for r in table.R]

@@ -17,10 +17,8 @@ def pac_equivalence_query(hypothesis, upper_guard, epsilon, delta, state_num, eq
             sample = sample_generation_main(upper_guard, length, system)
 
             # Compare the results
-            flag = is_counterexample_normal(hypothesis, system, sample)
+            flag, ctx = is_counterexample_normal(hypothesis, system, sample)
             if flag:
-                # if ctx is None or sample < ctx:
-                ctx = sample
                 break
         if ctx is not None:
             ctx = minimize_counterexample_normal(hypothesis, system, ctx)
@@ -41,10 +39,8 @@ def pac_equivalence_query_level(hypothesis, upper_guard, epsilon, delta, level, 
             sample = sample_generation_main(upper_guard, length, system)
 
             # Compare the results
-            flag = is_counterexample_normal(hypothesis, system, sample)
+            flag, ctx = is_counterexample_normal(hypothesis, system, sample)
             if flag:
-                # if ctx is None or sample < ctx:
-                ctx = sample
                 break
         if ctx is not None:
             ctx = minimize_counterexample_normal(hypothesis, system, ctx)
@@ -55,9 +51,18 @@ def pac_equivalence_query_level(hypothesis, upper_guard, epsilon, delta, level, 
 # --------------------------------- auxiliary function ---------------------------------
 
 def is_counterexample_normal(hypothesis, system, sample):
-    real_value = system.test_DTWs_normal(sample, False)
-    value = hypothesis.test_DTWs_normal(sample)
-    return real_value != value
+    real_outputs = system.test_DTWs_normal(sample, False)
+    outputs = hypothesis.test_DTWs_normal(sample)
+    if real_outputs != outputs:
+        # 最小化反例长度
+        ctx = []
+        for i in range(len(sample)):
+            ctx.append(sample[i])
+            if real_outputs[i] != outputs[i]:
+                break
+        return True, ctx
+    else:
+        return False, None
 
 
 def minimize_counterexample_normal(hypothesis, system, ctx):
@@ -85,7 +90,8 @@ def minimize_counterexample_normal(hypothesis, system, ctx):
                 break
             LTWs_temp = copy.deepcopy(LTWs)
             LTWs_temp[i] = TimedWord(LTWs[i].action, one_lower(LTWs[i].time))
-            if not is_counterexample_normal(hypothesis, system, LTW_to_DTW(LTWs_temp, reset)):
+            flag, ctx = is_counterexample_normal(hypothesis, system, LTW_to_DTW(LTWs_temp, reset))
+            if not flag:
                 break
             LTWs = LTWs_temp
     return LTW_to_DTW(LTWs, reset)

@@ -15,6 +15,9 @@ class System(object):
         self.mq_num = 0
         self.eq_num = 0
         self.test_num = 0
+        self.test_num_cache = 0
+        self.action_num = 0
+        self.cache = {}
 
     # Perform tests(LTWs) on the system(smart teacher), return value and LRTWs(补全)
     def test_LTWs(self, LTWs):
@@ -57,11 +60,18 @@ class System(object):
     # Perform tests(DTWs) on the system, return value and DRTWs(full)
     def test_DTWs(self, DTWs):
         self.test_num += 1
+
+        tuple_DTWs = tuple(DTWs)
+        if tuple_DTWs in self.cache:
+            return self.cache[tuple_DTWs][0], self.cache[tuple_DTWs][1]
+
+        self.test_num_cache += 1
         DRTWs = []
-        value = None
+        outputs = []
         now_time = 0
         cur_state = self.init_state
         for dtw in DTWs:
+            self.action_num +=1
             time = dtw.time + now_time
             new_LTW = TimedWord(dtw.action, time)
             flag = False
@@ -76,10 +86,14 @@ class System(object):
                         now_time = time
                         reset = False
                     DRTWs.append(ResetTimedWord(dtw.action, dtw.time, reset))
+                    if cur_state in self.accept_states:
+                        outputs.append(1)
+                    else:
+                        outputs.append(0)
                     break
             if not flag:
                 DRTWs.append(ResetTimedWord(dtw.action, dtw.time, True))
-                value = -1
+                outputs.append(-1)
                 break
         # 补全
         len_diff = len(DTWs) - len(DRTWs)
@@ -87,15 +101,13 @@ class System(object):
             temp = DTWs[len(DRTWs):]
             for i in temp:
                 DRTWs.append(ResetTimedWord(i.action, i.time, True))
-        if value != -1:
-            if cur_state in self.accept_states:
-                value = 1
-            else:
-                value = 0
-        return DRTWs, value
+                outputs.append(-1)
+        self.cache[tuple_DTWs] = [DRTWs, outputs]
+        return DRTWs, outputs
 
     # input -> DTW(single)，output -> curState and value - for logical-timed test
     def test_DTW(self, DTW, now_time, cur_state):
+        self.action_num += 1
         value = None
         reset = False
         tran_flag = False  # tranFlag为true表示有这样的迁移
@@ -125,14 +137,19 @@ class System(object):
 
     # Perform tests(DTWs) on the system, return value
     def test_DTWs_normal(self, DTWs, is_mq=False):
+        tuple_DTWs = tuple(DTWs)
         if is_mq:
             self.mq_num += 1
         else:
             self.test_num += 1
-        value = 0
+            if tuple_DTWs in self.cache:
+                return self.cache[tuple_DTWs][0]
+            self.test_num_cache += 1
+        outputs = []
         now_time = 0
         cur_state = self.init_state
         for dtw in DTWs:
+            self.action_num += 1
             time = dtw.time + now_time
             new_LTW = TimedWord(dtw.action, time)
             flag = False
@@ -146,17 +163,22 @@ class System(object):
                         now_time = time
                     break
             if not flag:
-                value = -1
+                outputs.append(-1)
                 break
-        if value != -1:
             if cur_state in self.accept_states:
-                value = 1
+                outputs.append(1)
             else:
-                value = 0
-        return value
+                outputs.append(0)
+        # 补全
+        len_diff = len(DTWs) - len(outputs)
+        if len_diff != 0:
+            outputs.extend([-1] * len_diff)
+        self.cache[tuple_DTWs] = [outputs]
+        return outputs
 
     # input -> DTW(single)，output -> curState and value - for logical-timed test
     def test_DTW_normal(self, DTW, now_time, cur_state):
+        self.action_num += 1
         value = None
         reset = False
         tran_flag = False  # tranFlag为true表示有这样的迁移
