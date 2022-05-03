@@ -1,6 +1,6 @@
 # PAC Learning DOTAs
 
-> This project is a refactored version of [learning_OTA_by_testing](https://github.com/MrEnvision/learning_OTA_by_testing). 
+> This project is a refactored version of [learning_OTA_by_testing](https://github.com/sherwinshen/learning_OTA_by_testing). 
 
 ## Overview
 
@@ -82,7 +82,7 @@ If we learn the target DOTA successfully, the final COTA will be drawn and displ
 
 ## License
 
-See [MIT LICENSE](https://github.com/MrEnvision/pac_learn_DOTAs/blob/master/LICENSE) file.
+See [MIT LICENSE](./LICENSE) file.
 
 ## Contact
 
